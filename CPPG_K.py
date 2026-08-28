@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
-"""Projected-database CPPG with an optional maximum pattern length.
+"""Length-bounded CPPG comparison implementation.
 
-This is the controlled CPPG-k baseline. With maxPatternLength=None, it follows
-the unrestricted original CPPG search. With an integer k, it uses the same
-projected-database operations but stops recursive growth at length k.
+This module implements the projected-database CPPG search semantics used as the
+controlled baseline in the paper. With an integer maxPatternLength, recursive
+growth stops at that length; with None, the same search proceeds without a
+length bound.
+
+The implementation uses the same transaction denominator, deterministic item
+ordering, relative-frequency threshold, coverage criterion, and prefix-overlap
+semantics as PSC-CPM so that the bounded outputs can be compared directly.
 """
 
 from __future__ import annotations
@@ -16,7 +21,7 @@ import time
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 try:
     import psutil
@@ -358,6 +363,9 @@ class CPPGK:
                 transactions.append(tuple(items))
         return transactions
 
+    # Convenience end-of-run memory statistics.
+    # These values are not the peak-RSS measurements reported in the paper.
+    # Paper benchmarks use the OS high-water RSS from `/usr/bin/time -v`.
     def _capture_memory(self):
         if psutil is None:
             return

@@ -1,52 +1,40 @@
 #!/usr/bin/env python3
-"""PSC-CPM: bounded, vertical, CPPG-equivalent coverage-pattern mining.
+"""Pruned State-Compressed Coverage Pattern Mining (PSC-CPM).
 
-This implementation is intended for a fair comparison with the original CPPG
-search procedure.
+This module implements the bounded coverage-pattern mining method described in
+"Efficient k-Coverage Pattern Mining for Representative Monitoring in
+Transportation Networks."
 
-Key properties
---------------
-1. Global/initial-support filtering is optional.
-2. Duplicate transaction-state compression can preserve the multiplicity of
-   each state. With preserveMultiplicity=True, compression changes the
-   representation but not RF, CS, or OR.
-3. Vertical integer bitsets replace recursive projected databases.
-4. Pattern growth stops at maxPatternLength.
-5. By default, only non-overlap prefixes are expanded. This matches CPPG's
-   recursive search semantics and is the source of substantial pruning.
+The implementation preserves the deterministic CPPG item order and prefix
+non-overlap semantics while replacing recursive projected databases with
+multiplicity-preserving vertical integer bitsets.
 
-Important semantic choice
--------------------------
-requirePrefixNonOverlap=True:
-    Matches CPPG. If an extension violates maxOR, that extension is not
-    recursively expanded.
+The main pruning mechanisms are:
 
-requirePrefixNonOverlap=False:
-    Enumerates every item combination up to maxPatternLength and checks only
-    the final pattern constraints. This can require
-    sum(C(m, l), l=1..L) candidate evaluations and can be impractical.
+1. minimum-relative-frequency filtering,
+2. prefix-overlap pruning,
+3. an optimistic coverage upper bound, and
+4. the maximum pattern-length bound k.
 
-PAMI-style usage
-----------------
-    from PSC_CPM_corrected import PSCCPM
+Duplicate transaction states may be grouped while preserving their original
+multiplicity. Empty transactions are retained in the denominator by default,
+matching the experimental configuration used in the paper.
+
+Pruning effectiveness is threshold- and data-dependent.
+
+Example
+-------
+    from PSC_CPM import PSCCPM
 
     miner = PSCCPM(
         iFile="transactions.txt",
-        minRF=0.012,
+        minRF=0.04,
         minCS=0.40,
         maxOR=0.30,
-        sep="\t",
         maxPatternLength=5,
-        minGlobalSupport=0.0,
-        maxGlobalSupport=1.0,
-        deduplicate=True,
-        preserveMultiplicity=True,
-        dropEmptyTransactions=False,
-        requirePrefixNonOverlap=True,
-        checkpointFile="psc_cpm_checkpoint.txt",
     )
     miner.mine()
-    miner.save("psc_cpm_patterns.txt")
+    patterns = miner.getPatterns()
 """
 
 from __future__ import annotations
@@ -59,7 +47,7 @@ import time
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Tuple
 
 try:
     import psutil
@@ -425,8 +413,9 @@ class PSCCPM:
                 overlapCount = self._weighted_count(overlapBits)
                 overlapRatio = overlapCount / candidateSupport
 
-                # This is the pruning rule missing from the previous PSCCPM.
-                # It matches original CPPG: only non-overlap prefixes grow.
+                # Reject an overlap-violating extension. Every descendant
+                # retains this violating prefix, so the branch can be safely
+                # pruned under the fixed CPPG prefix-overlap semantics.
                 if (
                     self.requirePrefixNonOverlap
                     and overlapRatio > self.maxOR + self.EPSILON
@@ -534,6 +523,9 @@ class PSCCPM:
             for pattern, record in self.records.items()
         }
 
+    # Convenience end-of-run memory statistics.
+    # These values are not the peak-RSS measurements reported in the paper.
+    # Paper benchmarks use the OS high-water RSS from `/usr/bin/time -v`.
     def _capture_memory(self):
         if psutil is None:
             return
@@ -596,9 +588,6 @@ class PSCCPM:
         self.status = "not_started"
         self.abortReason = None
         self._lastCheckpointTime = 0.0
-
-
-OptimizedCPPG = PSCCPM
 
 
 def _build_argument_parser():

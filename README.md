@@ -14,25 +14,32 @@ This repository contains the implementation of **Pruned State-Compressed Coverag
 
 Tested with **Python 3.12.11**.
 
-No third-party Python packages are required for the mining algorithms.
+The command-line mining implementations require only the Python standard
+library.
+
+`psutil` is optional and is used only for convenience process-memory getters.
+`pandas` is optional and is required only by `getPatternsAsDataFrame()` in
+`PSC_CPM.py`.
+
+The peak-RSS values reported in the paper were measured externally using the
+Linux high-water value from `/usr/bin/time -v`, not through `psutil`.
 
 ## Input Format
 
-Use one transaction per line, with items separated by whitespace.
+Use one transaction per line, with items separated by **tab characters**.
 
-Duplicate transactions are allowed.
-
-A blank line represents an empty transaction, and blank transactions remain part of the transaction denominator.
+Duplicate transactions are allowed. A blank line represents an empty
+transaction, and empty transactions remain part of the transaction denominator.
 
 Example:
 
 ```text
-R001 R006 R012
-R004 R018
-R001 R006 R012
+R001	R006	R012
+R004	R018
+R001	R006	R012
 
-R003 R021
-````
+R003	R021
+```
 
 The included `sample_transactions.txt` file is a larger synthetic dataset provided for software verification.
 
@@ -68,17 +75,16 @@ python CPPG_K.py \
 
 ## Sample Verification
 
-For the included synthetic dataset and the example configuration above, **PSC-CPM and CPPG-k return the same bounded pattern set**.
+For `sample_transactions.txt` with `minRF=0.10`, `minCS=0.40`,
+`maxOR=0.30`, and `k=5`, both implementations return **762 coverage
+patterns**. Their pattern keys, coverage counts, coverage supports, and overlap
+ratios are identical.
 
-The sample dataset contains:
+The sample contains 750 transactions, 75 distinct synthetic items, 16 empty
+transactions, duplicate transaction states, and varying transaction lengths.
 
-* 750 transactions
-* 75 distinct synthetic items
-* duplicate transaction states
-* empty transactions
-* varying transaction lengths
-
-It is provided only for software verification and demonstration.
+The sample is intended for correctness and execution verification, not for
+reproducing the runtime results reported in the paper.
 
 ## Paper Configurations
 
@@ -109,4 +115,3 @@ The included `sample_transactions.txt` file is a fully synthetic dataset created
 ## License
 
 This repository is released under the **MIT License**.
-
