@@ -73,7 +73,7 @@ python CPPG_K.py \
 * `--max-or` — maximum allowed overlap ratio for each pattern extension.
 * `--k` — maximum number of items in a reported pattern.
 
-## Sample Verification
+## Reproducibility and Sample Verification
 
 For `sample_transactions.txt` with `minRF=0.10`, `minCS=0.40`,
 `maxOR=0.30`, and `k=5`, both implementations return **762 coverage
@@ -111,6 +111,17 @@ k = 5
 The Fukushima traffic dataset used in the paper is not distributed with this repository because the authors do not have permission to redistribute it.
 
 The included `sample_transactions.txt` file is a fully synthetic dataset created solely for software verification and contains no records derived from the Fukushima or SUMO datasets.
+
+## Citation
+
+If you use PSC-CPM, please cite the associated paper. Final Springer DOI and
+publication metadata will be added after publication.
+
+GitHub citation metadata is available through `CITATION.cff`.
+
+> **TODO after publication:** Update `CITATION.cff` with a
+> `preferred-citation` entry for the BDA 2026 conference paper using its final
+> Springer publication metadata. Do not add provisional or guessed metadata.
 
 ## License
 

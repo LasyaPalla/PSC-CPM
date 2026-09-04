@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: >-
+  If you use PSC-CPM in your research, please cite the software using the
+  metadata in this file. A preferred citation for the associated BDA 2026
+  paper will be added after publication.
+title: "PSC-CPM: Pruned State-Compressed Coverage Pattern Mining"
+type: software
+authors:
+  - family-names: Palla
+    given-names: Lasya
+    orcid: "https://orcid.org/0009-0009-8501-8990"
+  - family-names: Pogaku
+    given-names: Arjun Chakravarthi
+    orcid: "https://orcid.org/0000-0003-2680-6371"
+  - family-names: Rage
+    given-names: Uday Kiran
+    orcid: "https://orcid.org/0000-0002-5417-0289"
+repository-code: "https://github.com/LasyaPalla/PSC-CPM"
+license: MIT
+keywords:
+  - coverage pattern mining
+  - transportation networks
+  - representative monitoring
+  - data mining
+  - pattern mining
